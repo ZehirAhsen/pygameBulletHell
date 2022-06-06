@@ -1,10 +1,7 @@
-# Import the pygame module
 import pygame
-# Import random for random numbers
+
 import random
 
-# Import pygame.locals for easier access to key coordinates
-# Updated to conform to flake8 and black standards
 from pygame.locals import (
     K_UP,
     RLEACCEL,
@@ -18,17 +15,14 @@ from pygame.locals import (
     QUIT,
 )
 
-# Define constants for the screen width and height
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
 
 playerHP = 4
-bossHP = 15
+bossHP = 20
 clock = pygame.time.Clock()
 
 
-# Define a player object by extending pygame.sprite.Sprite
-# The surface drawn on the screen is now an attribute of 'player'
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super(Player, self).__init__()
@@ -42,7 +36,8 @@ class Player(pygame.sprite.Sprite):
         self.health = playerHP
 
     def update(self, pressed_keys):
-
+        if lose:
+            return
         if pressed_keys[K_UP]:
             self.rect.move_ip(0, -5)
         if pressed_keys[K_DOWN]:
@@ -52,7 +47,6 @@ class Player(pygame.sprite.Sprite):
         if pressed_keys[K_RIGHT]:
             self.rect.move_ip(5, 0)
 
-        # Keep player on the screen
         if self.rect.left < 0:
             self.rect.left = 0
         if self.rect.right > SCREEN_WIDTH:
@@ -63,9 +57,6 @@ class Player(pygame.sprite.Sprite):
             self.rect.bottom = SCREEN_HEIGHT
 
 
-# Define the enemy object by extending pygame.sprite.Sprite
-
-# The surface you draw on the screen is now an attribute of 'enemy'
 class EnemyBomber(pygame.sprite.Sprite):
     def __init__(self):
         super(EnemyBomber, self).__init__()
@@ -79,8 +70,6 @@ class EnemyBomber(pygame.sprite.Sprite):
         )
         self.speed = 5
 
-    # Move the sprite based on speed
-    # Remove the sprite when it passes the left edge of the screen
     def update(self):
         self.rect.move_ip(self.speed, 0)
         if self.rect.right > SCREEN_WIDTH or self.rect.left < 0:
@@ -105,9 +94,6 @@ class EnemyBoss(pygame.sprite.Sprite):
                 SCREEN_HEIGHT / 2 - 200
             )
         )
-
-    # Move the sprite based on speed
-    # Remove the sprite when it passes the left edge of the screen
 
     def attack(self):
         rand = random.randint(0, 3)
@@ -180,9 +166,6 @@ class EnemyGun(pygame.sprite.Sprite):
         )
         self.speed = 5
 
-    # Move the sprite based on speed
-    # Remove the sprite when it passes the left edge of the screen
-
     def attack(self):
         newBullet = Bullet(self.rect.right, self.rect.bottom, player.rect.right, player.rect.bottom)
         bullets.add(newBullet)
@@ -241,8 +224,6 @@ class EnemyStar(pygame.sprite.Sprite):
         )
         self.speed = 5
 
-    # Move the sprite based on speed
-    # Remove the sprite when it passes the left edge of the screen
     def attack(self):
         newBullet = Bullet(self.rect.right, self.rect.bottom, self.rect.right + 800, self.rect.bottom)
         bullets.add(newBullet)
@@ -302,11 +283,7 @@ class PlayerBullet(pygame.sprite.Sprite):
             )
         )
 
-        # Move the sprite based on speed
-
-    # Remove the sprite when it passes the left edge of the screen
     def update(self):
-        # self.rect.move_ip(0, self.speed)
         self.rect.move_ip(0, -20)
         if self.rect.bottom < 0:
             self.kill()
@@ -326,11 +303,8 @@ class Bullet(pygame.sprite.Sprite):
         self.speedX = (targetx - self.rect.right) / 100
         self.speedY = (targety - self.rect.bottom) / 100
 
-        # Move the sprite based on speed
-
-    # Remove the sprite when it passes the left edge of the screen
     def update(self):
-        # self.rect.move_ip(0, self.speed)
+
         self.rect.move_ip(self.speedX, self.speedY)
         if self.rect.bottom < 0:
             self.kill()
@@ -359,11 +333,9 @@ class BulletRect(pygame.sprite.Sprite):
             self.speedX = 5
         elif self.x > SCREEN_WIDTH:
             self.speedX = -5
-        # Move the sprite based on speed
 
-    # Remove the sprite when it passes the left edge of the screen
     def update(self):
-        # self.rect.move_ip(0, self.speed)
+
         self.rect.move_ip(self.speedX, 0)
         if self.x < 0:
             if self.rect.left > SCREEN_WIDTH:
@@ -373,14 +345,10 @@ class BulletRect(pygame.sprite.Sprite):
                 self.kill()
 
 
-
-# Setup for sounds. Defaults are good.
 pygame.mixer.init()
-# Initialize pygame
+
 pygame.init()
 
-# Create the screen object
-# The size is determined by the constant SCREEN_WIDTH and SCREEN_HEIGHT
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 shootSound = pygame.mixer.Sound("ATTACK5.wav")
@@ -391,7 +359,8 @@ shootSound.set_volume(0.05)
 shieldSound.set_volume(0.1)
 hitSound.set_volume(0.1)
 
-# Create a custom event for adding a new enemy
+font = pygame.font.Font(None, 36)
+
 ADDENEMY = pygame.USEREVENT + 1
 pygame.time.set_timer(ADDENEMY, 2000)
 
@@ -401,13 +370,8 @@ pygame.time.set_timer(ADDBULLET, 1000)
 BOSSBULLETSTORM = pygame.USEREVENT + 3
 BOSSATTACK = pygame.USEREVENT + 4
 
-# Instantiate player. Right now, this is just a rectangle.
-# Create the 'player'
 player = Player()
 
-# Create groups to hold enemy sprites and all sprites
-# - enemies is used for collision detection and position updates
-# - all_sprites is used for rendering
 enemies = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 playerBullets = pygame.sprite.Group()
@@ -438,32 +402,33 @@ pygame.mixer.music.load("muzyczka.mp3")
 pygame.mixer.music.play(loops=-1)
 pygame.mixer.music.set_volume(0.1)
 
-# Variable to keep the main loop running
 running = True
 
 time = 0
 shieldDeathTime = 0
 shieldTime = -15000
+endTime = 0
 kill = 0
 IframeTime = 0
+win = False
+lose = False
 
-# Main loop
 while running:
-    # Look at every event in the queue
+
     for event in pygame.event.get():
-        # Did the user hit a key?
+
         if event.type == KEYDOWN:
-            # Was it the Escape key? If so, stop the loop.
+
             if event.key == K_ESCAPE:
                 running = False
-            if event.key == K_z:
+            if event.key == K_z and not lose:
                 if pygame.time.get_ticks() > time + 300:
                     new_bullet = PlayerBullet()
                     shootSound.play()
                     playerBullets.add(new_bullet)
                     all_sprites.add(new_bullet)
                     time = pygame.time.get_ticks()
-            if event.key == K_x:
+            if event.key == K_x and not lose:
                 if pygame.time.get_ticks() > shieldTime + 15000:
                     playerShield = PlayerShield()
                     shieldSound.play()
@@ -477,13 +442,13 @@ while running:
 
 
 
-        # Did the user click the window close button? If so, stop the loop.
+
         elif event.type == QUIT:
             running = False
 
-        # Add a new enemy?
+
         elif event.type == ADDENEMY:
-            # Create the new enemy and add it to sprite groups
+
             rand = random.randint(0, 2)
             if rand == 0:
                 new_enemy = EnemyGun()
@@ -511,32 +476,51 @@ while running:
                 bullets.add(newBullet)
                 all_sprites.add(newBullet)
 
-    # Get the set of keys pressed and check for user input
     pressed_keys = pygame.key.get_pressed()
-    player.update(pressed_keys)
 
-    # Update enemy position
     enemies.update()
     bullets.update()
     bossgroup.update()
     playerBullets.update()
-    # Fill the screen with black
+    player.update(pressed_keys)
+
     screen.fill((0, 0, 0))
 
     for entity in all_sprites:
         screen.blit(entity.surf, entity.rect)
 
-    # Check if any enemies have collided with the player
+    if win:
+        text = font.render("Udało się!", True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2
+        screen.blit(text, [text_x, text_y])
+        if pygame.time.get_ticks() > endTime + 11000:
+            running = False
+    if lose:
+        text = font.render("Nie żyjesz!", True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2
+        screen.blit(text, [text_x, text_y])
+        if pygame.time.get_ticks() > endTime + 11000:
+            running = False
+
     if pygame.sprite.groupcollide(players, bullets, False, True):
-        # If so, then remove the player and stop the loop
+
         healthOrbs[player.health - 1].kill()
-        if pygame.time.get_ticks() > IframeTime + 1000:
+        if pygame.time.get_ticks() > IframeTime + 500:
             player.health -= 1
             hitSound.play()
             IframeTime = pygame.time.get_ticks()
-        if player.health <= 0:
-            player.kill()
-            running = False
+            if player.health <= 0:
+                player.kill()
+                endTime = pygame.time.get_ticks()
+                pygame.mixer.music.load("lose.mp3")
+                pygame.mixer.music.play(loops=1)
+                pygame.mixer.music.set_volume(0.3)
+                lose = True
+
     pygame.sprite.groupcollide(enemies, shieldGroup, True, False)
     pygame.sprite.groupcollide(bullets, shieldGroup, True, False)
     if pygame.sprite.groupcollide(enemies, playerBullets, True, True):
@@ -562,10 +546,13 @@ while running:
                 for bullet in bullets.sprites():
                     bullet.kill()
                 pygame.time.set_timer(ADDENEMY, 0)
-                pygame.time.set_timer(ADDBULLET, 5000)
+                pygame.time.set_timer(ADDBULLET, 0)
                 pygame.time.set_timer(BOSSATTACK, 0)
 
-    if (pygame.time.get_ticks() > shieldDeathTime + 1000):
+                win = True
+                endTime = pygame.time.get_ticks()
+
+    if pygame.time.get_ticks() > shieldDeathTime + 1000:
         for shield in shieldGroup.sprites():
             shield.kill()
     if pygame.time.get_ticks() > shieldDeathTime + 15000:
@@ -573,9 +560,8 @@ while running:
         all_sprites.add(shieldNotif)
         notifGroup.add(shieldNotif)
 
-    # Draw the player on the screen
-    screen.blit(player.surf, player.rect)
 
-    # Update the display
+    #screen.blit(player.surf, player.rect)
+
     pygame.display.flip()
     clock.tick(60)
