@@ -19,7 +19,7 @@ SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
 
 playerHP = 6
-bossHP = 25
+bossHP = 1
 boss2HP = 25
 clock = pygame.time.Clock()
 
@@ -161,6 +161,23 @@ class EnemyBoss2(pygame.sprite.Sprite):
         self.health = boss2HP
         self.count = 0
         self.speed = 1
+        self.currentattack = ""
+        self.spinFrame = 0
+        self.gravTimer = 0
+        img = pygame.image.load("bossSpinSprites.png").convert()
+        size = (int(img.get_width() / 18), int(img.get_height()))
+        self.spinFrames = [self.cropImage(img, (x, y), size) for y in range(1) for x in range(18)]
+        img = pygame.image.load("bossGravFrames.png").convert()
+        size = (int(img.get_width() / 7), int(img.get_height()))
+        self.gravFrames = [self.cropImage(img, (x, y), size) for y in range(1) for x in range(7)]
+        self.evilEye = pygame.image.load("boss2evileye.png").convert()
+        img = pygame.image.load("bossSwipeFrames.png").convert()
+        size = (int(img.get_width() / 5), int(img.get_height()))
+        self.swipeFrames = [self.cropImage(img, (x, y), size) for y in range(1) for x in range(5)]
+
+
+
+
         self.rect = self.surf.get_rect(
             center=(
                 SCREEN_WIDTH / 2,
@@ -168,17 +185,30 @@ class EnemyBoss2(pygame.sprite.Sprite):
             )
         )
 
+    def cropImage(self, img, position, size):
+        frame = pygame.Surface(size)
+        frame.blit(img, (0, 0), (position[0] * size[0], position[1] * size[1], size[0], size[1]))
+        return frame
+
     def attack(self):
         rand = random.randint(0, 3)
         pygame.time.set_timer(LAZORBULLETS, 0)
         pygame.time.set_timer(DOWNBULLETS, 0)
         pygame.time.set_timer(BOSSSWIPE, 0)
+        self.spinFrame = 0
+        self.currentattack = ""
+        self.gravTimer = 0
         if rand == 0:
             self.count = 0
             pygame.time.set_timer(LAZORBULLETS, 100)
         if rand == 1:
+            self.currentattack = "grav"
+            self.gravTimer = pygame.time.get_ticks()
             pygame.time.set_timer(DOWNBULLETS, 200)
         if rand == 2:
+            self.gravTimer = pygame.time.get_ticks()
+            self.surf = self.evilEye
+            self.currentattack = "home"
             newBullet = Bullet(player.rect.centerx+200, player.rect.centery, player.rect.centerx, player.rect.centery)
             bullets.add(newBullet)
             all_sprites.add(newBullet)
@@ -219,14 +249,43 @@ class EnemyBoss2(pygame.sprite.Sprite):
             all_sprites.add(newBullet)
 
         if rand == 3:
+            self.currentattack = "swipe"
+            self.gravTimer = pygame.time.get_ticks()
             pygame.time.set_timer(BOSSSWIPE, 800)
 
 
 
     def update(self):
-        self.rect.move_ip(self.speed, 0)
-        if self.rect.right > SCREEN_WIDTH or self.rect.left < 0:
-            self.speed *= -1
+        if self.currentattack == "grav":
+            if pygame.time.get_ticks() > self.gravTimer+2500:
+                if self.spinFrame <= 0:
+                    self.spinFrame = 0
+                else:
+                    self.spinFrame -= 0.3
+            else:
+                if self.spinFrame >= len(self.gravFrames)-1:
+                    self.spinFrame = len(self.gravFrames)-1
+                else:
+                    self.spinFrame += 0.3
+            self.surf = self.gravFrames[int(self.spinFrame)]
+        if self.currentattack == "home":
+            if pygame.time.get_ticks() > self.gravTimer + 1000:
+                self.surf = self.spinFrames[0]
+        if self.currentattack == "swipe":
+            if pygame.time.get_ticks() > self.gravTimer+400:
+                if self.spinFrame <= 0:
+                    self.spinFrame = 0
+                else:
+                    self.spinFrame -= 0.3
+            else:
+                if self.spinFrame >= len(self.swipeFrames)-1:
+                    self.spinFrame = len(self.swipeFrames)-1
+                else:
+                    self.spinFrame += 0.3
+            self.surf = self.swipeFrames[int(self.spinFrame)]
+
+
+
 
 
 class EnemyGun(pygame.sprite.Sprite):
@@ -338,6 +397,50 @@ class PowerGunPickup(pygame.sprite.Sprite):
         if self.rect.bottom > SCREEN_HEIGHT:
             self.kill()
 
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, position):
+        super(Explosion, self).__init__()
+        img = pygame.image.load("smallExplosion.png").convert()
+        size = (int(img.get_width()/4), int(img.get_height()/1))
+        self.flames = [ self.cropImage(img, (x, y), size) for y in range(1) for x in range(4)]
+        self.act_frame = 0
+        self.surf = self.flames[0]
+        self.rect = pygame.Rect(position[0], position[1], size[0], size[1])
+
+    def cropImage(self, img, position, size):
+        frame = pygame.Surface(size)
+        frame.blit(img, (0, 0), (position[0]*size[0], position[1]*size[1], size[0], size[1]))
+        return frame
+
+    def update(self):
+        self.act_frame = self.act_frame+0.2
+        if (self.act_frame>=len(self.flames)):
+          self.kill()
+          return
+        self.surf = self.flames[int(self.act_frame)]
+
+class BigExplosion(pygame.sprite.Sprite):
+    def __init__(self, position):
+        super(BigExplosion, self).__init__()
+        img = pygame.image.load("bigExplosion.png").convert()
+        size = (int(img.get_width()/3), int(img.get_height()/1))
+        self.flames = [ self.cropImage(img, (x, y), size) for y in range(1) for x in range(3)]
+        self.act_frame = 0
+        self.surf = self.flames[0]
+        self.rect = pygame.Rect(position[0], position[1], size[0], size[1])
+
+    def cropImage(self, img, position, size):
+        frame = pygame.Surface(size)
+        frame.blit(img, (0, 0), (position[0]*size[0], position[1]*size[1], size[0], size[1]))
+        return frame
+
+    def update(self):
+        self.act_frame = self.act_frame+0.4
+        if (self.act_frame>=len(self.flames)):
+          self.kill()
+          return
+        self.surf = self.flames[int(self.act_frame)]
+
 class PowerHealPickup(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super(PowerHealPickup, self).__init__()
@@ -363,6 +466,10 @@ class EnemyStar(pygame.sprite.Sprite):
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         randomX = random.randint(30, SCREEN_WIDTH - 30)
         randomY = random.randint(40, SCREEN_HEIGHT - 250)
+        for boss in boss2group:
+            while abs(randomX - boss.rect.centerx) < 90 and abs(randomY - boss.rect.centery) < 90:
+                randomX = random.randint(30, SCREEN_WIDTH - 30)
+                randomY = random.randint(40, SCREEN_HEIGHT - 250)
         while abs(randomX - player.rect.centerx) < 50 and abs(randomY - player.rect.centery) < 50:
             randomX = random.randint(30, SCREEN_WIDTH - 30)
             randomY = random.randint(40, SCREEN_HEIGHT - 250)
@@ -411,14 +518,32 @@ class EnemyStar(pygame.sprite.Sprite):
 class PlayerShield(pygame.sprite.Sprite):
     def __init__(self):
         super(PlayerShield, self).__init__()
-        self.surf = pygame.image.load("shieldsprite.png").convert()
-        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
+        img = pygame.image.load("shieldFrames.png").convert()
+        size = (int(img.get_width() / 5), int(img.get_height()))
+        self.frames = [self.cropImage(img, (x, y), size) for y in range(1) for x in range(5)]
+        self.surf = self.frames[0]
+        self.surf.set_colorkey((0, 0, 0), pygame.RLEACCEL)
+        self.spinFrame = 0
         self.rect = self.surf.get_rect(
             center=(
                 player.rect.right - 10,
                 player.rect.top + 10
             )
         )
+
+    def cropImage(self, img, position, size):
+        frame = pygame.Surface(size)
+        frame.blit(img, (0, 0), (position[0] * size[0], position[1] * size[1], size[0], size[1]))
+        return frame
+
+    def update(self):
+        self.spinFrame += 0.7
+        if self.spinFrame >= len(self.frames):
+            self.surf = self.frames[len(self.frames)-1]
+            self.surf.set_colorkey((0, 0, 0), pygame.RLEACCEL)
+        else:
+            self.surf = self.frames[int(self.spinFrame)]
+            self.surf.set_colorkey((0, 0, 0), pygame.RLEACCEL)
 
 
 class PlayerBullet(pygame.sprite.Sprite):
@@ -499,7 +624,6 @@ class BulletRect(pygame.sprite.Sprite):
             self.speedX = -5
 
     def update(self):
-
         self.rect.move_ip(self.speedX, 0)
         if self.x < 0:
             if self.rect.left > SCREEN_WIDTH:
@@ -596,6 +720,7 @@ all_sprites = pygame.sprite.Group()
 players = pygame.sprite.Group()
 bossgroup = pygame.sprite.Group()
 boss2group = pygame.sprite.Group()
+explosions = pygame.sprite.Group()
 healthPickups = pygame.sprite.Group()
 shieldPickups = pygame.sprite.Group()
 gunPickups = pygame.sprite.Group()
@@ -642,6 +767,7 @@ shieldDeathTime = 0
 
 selectedPower = "shield"
 pityTimer = 3
+
 
 endTime = 0
 kill = 0
@@ -797,6 +923,12 @@ while running:
                 bullets.add(newBullet)
                 all_sprites.add(newBullet)
 
+                boss.spinFrame += 0.5
+                if boss.spinFrame >= len(boss.spinFrames):
+                    boss.surf = boss.spinFrames[0]
+                else:
+                    boss.surf = boss.spinFrames[int(boss.spinFrame)]
+
                 boss.count += 1
 
         elif event.type == DOWNBULLETS:
@@ -818,16 +950,22 @@ while running:
 
     pressed_keys = pygame.key.get_pressed()
 
+    stars.update()
+
     enemies.update()
     bullets.update()
     bossgroup.update()
-    stars.update()
+    boss2group.update()
+    explosions.update()
     playerBullets.update()
     player.update(pressed_keys)
     powerUps.update()
     gunPickups.update()
     shieldPickups.update()
     healthPickups.update()
+    shieldGroup.update()
+
+
 
 
     screen.fill((0, 0, 0))
@@ -861,6 +999,9 @@ while running:
             hitSound.play()
             IframeTime = pygame.time.get_ticks()
             if player.health <= 0:
+                explosion = BigExplosion((player.rect.centerx, player.rect.centery))
+                explosions.add(explosion)
+                all_sprites.add(explosion)
                 player.kill()
                 endTime = pygame.time.get_ticks()
                 pygame.mixer.music.load("lose.mp3")
@@ -937,11 +1078,13 @@ while running:
                     all_sprites.add(powerpickup)
             else:
                 pityTimer-=1
+            explosion = Explosion((enemyShot.rect.centerx, enemyShot.rect.centery))
+            explosions.add(explosion)
+            all_sprites.add(explosion)
         kill += 1
-        print(kill)
 
 
-        if kill == 8:
+        if kill == 1:
             for i in range(0, bossHP):
                 bossHealthOrbs.append(BossHealthOrb(SCREEN_WIDTH - i * 3, 10))
                 all_sprites.add(bossHealthOrbs[i])
@@ -950,7 +1093,7 @@ while running:
             all_sprites.add(boss)
             pygame.time.set_timer(ADDENEMY, 5000)
             pygame.time.set_timer(BOSSATTACK, 3000)
-        if kill == 16:
+        if kill == 11:
             for i in range(0, boss2HP):
                 bossHealthOrbs.append(BossHealthOrb(SCREEN_WIDTH - i * 3, 10))
                 all_sprites.add(bossHealthOrbs[i])
@@ -967,6 +1110,9 @@ while running:
 
 
             if boss.health <= 0:
+                explosion = BigExplosion((boss.rect.centerx, boss.rect.centery))
+                explosions.add(explosion)
+                all_sprites.add(explosion)
                 boss.kill()
                 bossDeathSound.play()
                 pygame.time.set_timer(ADDENEMY, 1500)
@@ -991,6 +1137,9 @@ while running:
                     enemy.kill()
                 for bullet in bullets.sprites():
                     bullet.kill()
+                explosion = BigExplosion((boss2.rect.centerx, boss2.rect.centery))
+                explosions.add(explosion)
+                all_sprites.add(explosion)
                 pygame.time.set_timer(ADDENEMY, 0)
                 pygame.time.set_timer(ADDBULLET, 0)
                 pygame.time.set_timer(BOSSATTACK, 0)
