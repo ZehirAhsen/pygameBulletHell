@@ -19,8 +19,8 @@ SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
 
 playerHP = 6
-bossHP = 1
-boss2HP = 25
+bossHP = 25
+boss2HP = 30
 clock = pygame.time.Clock()
 
 
@@ -101,48 +101,48 @@ class EnemyBoss(pygame.sprite.Sprite):
         pygame.time.set_timer(BOSSBULLETSTORM, 0)
         if rand == 0:
             offset = random.randint(-25, 25)
-            bullet = BulletRect(-10, 100 + offset)
+            bullet = BulletRect(-410, 100 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(-50, 200 + offset)
+            bullet = BulletRect(-450, 200 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(-90, 300 + offset)
+            bullet = BulletRect(-490, 300 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(-130, 400 + offset)
+            bullet = BulletRect(-530, 400 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(-170, 500 + offset)
+            bullet = BulletRect(-570, 500 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(-170, 600 + offset)
+            bullet = BulletRect(-610, 600 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(-170, 700 + offset)
+            bullet = BulletRect(-640, 700 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
         elif (rand == 1):
             offset = random.randint(-25, 25)
-            bullet = BulletRect(SCREEN_WIDTH + 10, 100 + offset)
+            bullet = BulletRect(SCREEN_WIDTH + 410, 100 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(SCREEN_WIDTH + 50, 200 + offset)
+            bullet = BulletRect(SCREEN_WIDTH + 450, 200 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(SCREEN_WIDTH + 90, 300 + offset)
+            bullet = BulletRect(SCREEN_WIDTH + 490, 300 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(SCREEN_WIDTH + 130, 400 + offset)
+            bullet = BulletRect(SCREEN_WIDTH + 530, 400 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(SCREEN_WIDTH + 210, 500 + offset)
+            bullet = BulletRect(SCREEN_WIDTH + 570, 500 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(SCREEN_WIDTH + 250, 600 + offset)
+            bullet = BulletRect(SCREEN_WIDTH + 610, 600 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
-            bullet = BulletRect(SCREEN_WIDTH + 290, 700 + offset)
+            bullet = BulletRect(SCREEN_WIDTH + 650, 700 + offset)
             bullets.add(bullet)
             all_sprites.add(bullet)
         else:
@@ -360,7 +360,7 @@ class PowerUp(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.move_ip(0, 3)
-        if self.rect.bottom > SCREEN_HEIGHT:
+        if self.rect.top > SCREEN_HEIGHT:
             self.kill()
 
 class PowerShieldPickup(pygame.sprite.Sprite):
@@ -377,7 +377,7 @@ class PowerShieldPickup(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.move_ip(0, 4)
-        if self.rect.bottom > SCREEN_HEIGHT:
+        if self.rect.top > SCREEN_HEIGHT:
             self.kill()
 
 class PowerGunPickup(pygame.sprite.Sprite):
@@ -394,7 +394,7 @@ class PowerGunPickup(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.move_ip(0, 4)
-        if self.rect.bottom > SCREEN_HEIGHT:
+        if self.rect.top > SCREEN_HEIGHT:
             self.kill()
 
 class Explosion(pygame.sprite.Sprite):
@@ -455,7 +455,7 @@ class PowerHealPickup(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.move_ip(0, 4)
-        if self.rect.bottom > SCREEN_HEIGHT:
+        if self.rect.top > SCREEN_HEIGHT:
             self.kill()
 
 
@@ -470,7 +470,7 @@ class EnemyStar(pygame.sprite.Sprite):
             while abs(randomX - boss.rect.centerx) < 90 and abs(randomY - boss.rect.centery) < 90:
                 randomX = random.randint(30, SCREEN_WIDTH - 30)
                 randomY = random.randint(40, SCREEN_HEIGHT - 250)
-        while abs(randomX - player.rect.centerx) < 50 and abs(randomY - player.rect.centery) < 50:
+        while abs(randomX - player.rect.centerx) < 110 and abs(randomY - player.rect.centery) < 110:
             randomX = random.randint(30, SCREEN_WIDTH - 30)
             randomY = random.randint(40, SCREEN_HEIGHT - 250)
         self.rect = self.surf.get_rect(
@@ -482,35 +482,35 @@ class EnemyStar(pygame.sprite.Sprite):
         self.speed = 5
 
     def attack(self):
-        newBullet = Bullet(self.rect.right, self.rect.bottom, self.rect.right + 700, self.rect.bottom)
+        newBullet = Bullet(self.rect.right, self.rect.bottom, self.rect.right + 600, self.rect.bottom)
         bullets.add(newBullet)
         all_sprites.add(newBullet)
 
-        newBullet = Bullet(self.rect.right, self.rect.bottom, self.rect.right + 494, self.rect.bottom + 494)
+        newBullet = Bullet(self.rect.right, self.rect.bottom, self.rect.right + 424, self.rect.bottom + 424)
         bullets.add(newBullet)
         all_sprites.add(newBullet)
 
-        newBullet = Bullet(self.rect.right, self.rect.bottom, self.rect.right, self.rect.bottom + 700)
+        newBullet = Bullet(self.rect.right, self.rect.bottom, self.rect.right, self.rect.bottom + 600)
         bullets.add(newBullet)
         all_sprites.add(newBullet)
 
-        newBullet = Bullet(self.rect.left, self.rect.bottom, self.rect.left - 494, self.rect.bottom + 494)
+        newBullet = Bullet(self.rect.left, self.rect.bottom, self.rect.left - 424, self.rect.bottom + 424)
         bullets.add(newBullet)
         all_sprites.add(newBullet)
 
-        newBullet = Bullet(self.rect.left, self.rect.bottom, self.rect.left - 700, self.rect.bottom)
+        newBullet = Bullet(self.rect.left, self.rect.bottom, self.rect.left - 600, self.rect.bottom)
         bullets.add(newBullet)
         all_sprites.add(newBullet)
 
-        newBullet = Bullet(self.rect.left, self.rect.top, self.rect.left - 494, self.rect.top - 494)
+        newBullet = Bullet(self.rect.left, self.rect.top, self.rect.left - 424, self.rect.top - 424)
         bullets.add(newBullet)
         all_sprites.add(newBullet)
 
-        newBullet = Bullet(self.rect.right, self.rect.top, self.rect.right, self.rect.top - 700)
+        newBullet = Bullet(self.rect.right, self.rect.top, self.rect.right, self.rect.top - 600)
         bullets.add(newBullet)
         all_sprites.add(newBullet)
 
-        newBullet = Bullet(self.rect.right, self.rect.top, self.rect.right + 494, self.rect.top - 494)
+        newBullet = Bullet(self.rect.right, self.rect.top, self.rect.right + 424, self.rect.top - 424)
         bullets.add(newBullet)
         all_sprites.add(newBullet)
 
@@ -836,8 +836,17 @@ while running:
                         playerBullets.add(bullet)
                         all_sprites.add(bullet)
                     else:
-                        if(player.health < playerHP):
+                        if(player.health < playerHP-1):
                             healSound.play()
+                            healthOrbs[player.health].kill()
+                            healthOrbs[player.health] = HealthOrb(10 + (player.health) * 20, 10)
+                            all_sprites.add(healthOrbs[player.health])
+                            player.health += 1
+                            healthOrbs[player.health].kill()
+                            healthOrbs[player.health] = HealthOrb(10 + (player.health) * 20, 10)
+                            all_sprites.add(healthOrbs[player.health])
+                            player.health += 1
+                        elif (player.health < playerHP):
                             healthOrbs[player.health].kill()
                             healthOrbs[player.health] = HealthOrb(10 + (player.health) * 20, 10)
                             all_sprites.add(healthOrbs[player.health])
@@ -1084,7 +1093,7 @@ while running:
         kill += 1
 
 
-        if kill == 1:
+        if kill == 8:
             for i in range(0, bossHP):
                 bossHealthOrbs.append(BossHealthOrb(SCREEN_WIDTH - i * 3, 10))
                 all_sprites.add(bossHealthOrbs[i])
@@ -1093,7 +1102,7 @@ while running:
             all_sprites.add(boss)
             pygame.time.set_timer(ADDENEMY, 5000)
             pygame.time.set_timer(BOSSATTACK, 3000)
-        if kill == 11:
+        if kill == 17:
             for i in range(0, boss2HP):
                 bossHealthOrbs.append(BossHealthOrb(SCREEN_WIDTH - i * 3, 10))
                 all_sprites.add(bossHealthOrbs[i])
