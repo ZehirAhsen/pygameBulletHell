@@ -19,8 +19,8 @@ SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 800
 
 playerHP = 6
-bossHP = 25
-boss2HP = 30
+bossHP = 20
+boss2HP = 40
 clock = pygame.time.Clock()
 
 
@@ -467,12 +467,18 @@ class EnemyStar(pygame.sprite.Sprite):
         randomX = random.randint(30, SCREEN_WIDTH - 30)
         randomY = random.randint(40, SCREEN_HEIGHT - 250)
         for boss in boss2group:
-            while abs(randomX - boss.rect.centerx) < 90 and abs(randomY - boss.rect.centery) < 90:
+            for m in range(0, 100):
+                if abs(randomX - boss.rect.centerx) < 90 and abs(randomY - boss.rect.centery) < 90:
+                    randomX = random.randint(30, SCREEN_WIDTH - 30)
+                    randomY = random.randint(40, SCREEN_HEIGHT - 250)
+                else:
+                    break
+        for m in range(0, 100):
+            if abs(randomX - player.rect.centerx) < 110 and abs(randomY - player.rect.centery) < 110:
                 randomX = random.randint(30, SCREEN_WIDTH - 30)
                 randomY = random.randint(40, SCREEN_HEIGHT - 250)
-        while abs(randomX - player.rect.centerx) < 110 and abs(randomY - player.rect.centery) < 110:
-            randomX = random.randint(30, SCREEN_WIDTH - 30)
-            randomY = random.randint(40, SCREEN_HEIGHT - 250)
+            else:
+                break
         self.rect = self.surf.get_rect(
             center=(
                 randomX,
@@ -710,7 +716,6 @@ stars = pygame.sprite.Group()
 
 
 
-player = Player()
 
 enemies = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
@@ -727,8 +732,6 @@ gunPickups = pygame.sprite.Group()
 
 powerUps = pygame.sprite.Group()
 notifGroup = pygame.sprite.Group()
-all_sprites.add(player)
-players.add(player)
 
 for i in range(100):
   star = BackgroundStar(SCREEN_HEIGHT)
@@ -756,9 +759,7 @@ powerIndicator = PowerShieldPickup(SCREEN_WIDTH/2 - 60 + shieldGauge*6 + 10, 10)
 all_sprites.add(powerIndicator)
 
 
-pygame.mixer.music.load("muzyczka.mp3")
-pygame.mixer.music.play(loops=-1)
-pygame.mixer.music.set_volume(0.1)
+
 
 running = True
 
@@ -774,397 +775,512 @@ kill = 0
 IframeTime = 0
 win = False
 lose = False
+game = False
 
 while running:
 
-    for event in pygame.event.get():
+    if(game == False):
+        for sprite in all_sprites.sprites():
+            sprite.kill()
+        screen.fill((0, 0, 0))
 
-        if event.type == KEYDOWN:
-
-            if event.key == K_ESCAPE:
-                running = False
-            if event.key == K_z and not lose:
-                if pygame.time.get_ticks() > time + 300:
-                    new_bullet = PlayerBullet(0, -20)
-                    shootSound.play()
-                    playerBullets.add(new_bullet)
-                    all_sprites.add(new_bullet)
-                    time = pygame.time.get_ticks()
-            if event.key == K_x and not lose:
-                if shieldGauge >= 15:
-                    if selectedPower == "shield":
-                        playerShield = PlayerShield()
-                        shieldSound.play()
-                        shieldGroup.add(playerShield)
-                        all_sprites.add(playerShield)
-                        shieldDeathTime = pygame.time.get_ticks()
-                    elif selectedPower == "gun":
-                        gunSound.play()
-                        bullet = PlayerBullet(0, -20)
-                        playerBullets.add(bullet)
-                        all_sprites.add(bullet)
-
-                        bullet = PlayerBullet(-2.5, -17.5)
-                        playerBullets.add(bullet)
-                        all_sprites.add(bullet)
-
-                        bullet = PlayerBullet(2.5, -17.5)
-                        playerBullets.add(bullet)
-                        all_sprites.add(bullet)
-
-                        bullet = PlayerBullet(-5, -15)
-                        playerBullets.add(bullet)
-                        all_sprites.add(bullet)
-
-                        bullet = PlayerBullet(5, -15)
-                        playerBullets.add(bullet)
-                        all_sprites.add(bullet)
-
-                        bullet = PlayerBullet(-2.5, -12.5)
-                        playerBullets.add(bullet)
-                        all_sprites.add(bullet)
-
-                        bullet = PlayerBullet(2.5, -12.5)
-                        playerBullets.add(bullet)
-                        all_sprites.add(bullet)
-
-                        bullet = PlayerBullet(-10, -10)
-                        playerBullets.add(bullet)
-                        all_sprites.add(bullet)
-
-                        bullet = PlayerBullet(10, -10)
-                        playerBullets.add(bullet)
-                        all_sprites.add(bullet)
-                    else:
-                        if(player.health < playerHP-1):
-                            healSound.play()
-                            healthOrbs[player.health].kill()
-                            healthOrbs[player.health] = HealthOrb(10 + (player.health) * 20, 10)
-                            all_sprites.add(healthOrbs[player.health])
-                            player.health += 1
-                            healthOrbs[player.health].kill()
-                            healthOrbs[player.health] = HealthOrb(10 + (player.health) * 20, 10)
-                            all_sprites.add(healthOrbs[player.health])
-                            player.health += 1
-                        elif (player.health < playerHP):
-                            healthOrbs[player.health].kill()
-                            healthOrbs[player.health] = HealthOrb(10 + (player.health) * 20, 10)
-                            all_sprites.add(healthOrbs[player.health])
-                            player.health += 1
+        text = font.render("KULCORP ATTACKS!", True, (63, 14, 175))
+        text_rect = text.get_rect()
+        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2 - 300
+        screen.blit(text, [text_x, text_y])
+        text = font.render("Steruj strzałkami", True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2 - 200
+        screen.blit(text, [text_x, text_y])
+        text = font.render("Kliknij Z aby strzelać", True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2 - 100
+        screen.blit(text, [text_x, text_y])
+        text = font.render("Kliknij X aby użyć specjalnej zdolności", True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2
+        screen.blit(text, [text_x, text_y])
+        text = font.render("gdy masz na to energie", True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2 + 25
+        screen.blit(text, [text_x, text_y])
+        text = font.render("Z przeciwników mogą wypaść", True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2 + 100
+        screen.blit(text, [text_x, text_y])
+        text = font.render("inne specjalne zdolności", True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2 + 125
+        screen.blit(text, [text_x, text_y])
+        text = font.render("Podnoś plusy aby zdobywać energie", True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2 + 200
+        screen.blit(text, [text_x, text_y])
+        text = font.render("Wciśnij Z aby zacząć!", True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2 + 300
+        screen.blit(text, [text_x, text_y])
 
 
-
-                    shieldGauge = 0
-                    #print("Aktywacja tarczy!")
-                    for s in powerGauge:
-                        s.kill()
-
-        elif event.type == QUIT:
-            running = False
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+                if event.key == K_z:
 
 
-        elif event.type == ADDSTAR:
-            star = BackgroundStar()
-            stars.add(star)
-            all_sprites.add(star)
+                    pygame.mixer.music.load("muzyczka.mp3")
+                    pygame.mixer.music.play(loops=-1)
+                    pygame.mixer.music.set_volume(0.1)
 
-        elif event.type == BOSSSWIPE:
-            bullet = BulletRect(random.choice((-200, SCREEN_WIDTH+200)), player.rect.centery)
-            bullets.add(bullet)
-            all_sprites.add(bullet)
+                    time = 0
+                    shieldDeathTime = 0
+                    selectedPower = "shield"
+                    pityTimer = 3
+                    endTime = 0
+                    kill = 0
+                    win = False
+                    lose = False
+                    game = True
+                    player = Player()
+                    all_sprites.add(player)
+                    players.add(player)
 
-        elif event.type == ADDENEMY:
-            rand = random.randint(0, 2)
-            if rand == 0:
-                new_enemy = EnemyGun()
-            elif rand == 1:
-                new_enemy = EnemyStar()
-            else:
-                new_enemy = EnemyBomber()
-            enemies.add(new_enemy)
-            all_sprites.add(new_enemy)
+                    for i in range(100):
+                        star = BackgroundStar(SCREEN_HEIGHT)
+                        stars.add(star)
+                        all_sprites.add(star)
 
-        elif event.type == ADDBULLET:
-            for enemy in enemies.sprites():
-                enemy.attack()
+                    healthOrbs = []
+                    bossHealthOrbs = []
+                    powerGauge = []
 
-        elif event.type == POWERGAUGE:
-            if shieldGauge < 15:
-                #print(shieldGauge)
-                if shieldGauge > 15:
+                    for i in range(0, playerHP):
+                        healthOrbs.append(HealthOrb(10 + i * 20, 10))
+                        all_sprites.add(healthOrbs[i])
+
                     shieldGauge = 15
-                powerGauge[shieldGauge] = ShieldNotif(SCREEN_WIDTH / 2 - 60 + shieldGauge * 6, 10)
-                all_sprites.add(powerGauge[shieldGauge])
-                shieldGauge += 1
+                    for i in range(0, shieldGauge):
+                        powerGauge.append(ShieldNotif(SCREEN_WIDTH / 2 - 60 + i * 6, 10))
+                        all_sprites.add(powerGauge[i])
+
+                    powerIndicator = PowerShieldPickup(SCREEN_WIDTH / 2 - 60 + shieldGauge * 6 + 10, 10)
+                    all_sprites.add(powerIndicator)
+
+                    pygame.time.set_timer(ADDENEMY, 2000)
+                    pygame.time.set_timer(ADDBULLET, 1000)
+                    pygame.time.set_timer(POWERGAUGE, 1000)
+                    pygame.time.set_timer(ADDSTAR, 1000)
+    else:
+        for event in pygame.event.get():
+
+            if event.type == KEYDOWN:
+
+                if event.key == K_ESCAPE:
+                    running = False
+                if event.key == K_z and not lose:
+                    if pygame.time.get_ticks() > time + 300:
+                        new_bullet = PlayerBullet(0, -20)
+                        shootSound.play()
+                        playerBullets.add(new_bullet)
+                        all_sprites.add(new_bullet)
+                        time = pygame.time.get_ticks()
+                if event.key == K_x and not lose:
+                    if shieldGauge >= 15:
+                        if selectedPower == "shield":
+                            playerShield = PlayerShield()
+                            shieldSound.play()
+                            shieldGroup.add(playerShield)
+                            all_sprites.add(playerShield)
+                            shieldDeathTime = pygame.time.get_ticks()
+                        elif selectedPower == "gun":
+                            gunSound.play()
+                            bullet = PlayerBullet(0, -20)
+                            playerBullets.add(bullet)
+                            all_sprites.add(bullet)
+
+                            bullet = PlayerBullet(-2.5, -17.5)
+                            playerBullets.add(bullet)
+                            all_sprites.add(bullet)
+
+                            bullet = PlayerBullet(2.5, -17.5)
+                            playerBullets.add(bullet)
+                            all_sprites.add(bullet)
+
+                            bullet = PlayerBullet(-5, -15)
+                            playerBullets.add(bullet)
+                            all_sprites.add(bullet)
+
+                            bullet = PlayerBullet(5, -15)
+                            playerBullets.add(bullet)
+                            all_sprites.add(bullet)
+
+                            bullet = PlayerBullet(-2.5, -12.5)
+                            playerBullets.add(bullet)
+                            all_sprites.add(bullet)
+
+                            bullet = PlayerBullet(2.5, -12.5)
+                            playerBullets.add(bullet)
+                            all_sprites.add(bullet)
+
+                            bullet = PlayerBullet(-10, -10)
+                            playerBullets.add(bullet)
+                            all_sprites.add(bullet)
+
+                            bullet = PlayerBullet(10, -10)
+                            playerBullets.add(bullet)
+                            all_sprites.add(bullet)
+                        else:
+                            if(player.health < playerHP-1):
+                                healSound.play()
+                                healthOrbs[player.health].kill()
+                                healthOrbs[player.health] = HealthOrb(10 + (player.health) * 20, 10)
+                                all_sprites.add(healthOrbs[player.health])
+                                player.health += 1
+                                healthOrbs[player.health].kill()
+                                healthOrbs[player.health] = HealthOrb(10 + (player.health) * 20, 10)
+                                all_sprites.add(healthOrbs[player.health])
+                                player.health += 1
+                            elif (player.health < playerHP):
+                                healSound.play()
+                                healthOrbs[player.health].kill()
+                                healthOrbs[player.health] = HealthOrb(10 + (player.health) * 20, 10)
+                                all_sprites.add(healthOrbs[player.health])
+                                player.health += 1
 
 
 
-                if shieldGauge == 15:
-                    shieldReadySound.play()
+                        shieldGauge = 0
+                        #print("Aktywacja tarczy!")
+                        for s in powerGauge:
+                            s.kill()
 
-        elif event.type == BOSSATTACK:
+            elif event.type == QUIT:
+                running = False
 
-            for boss in bossgroup.sprites():
-                kill = 9
-                boss.attack()
-            for boss2 in boss2group.sprites():
-                boss2.attack()
 
-        elif event.type == LAZORBULLETS:
-            for boss in boss2group.sprites():
-                newBullet = Bullet(boss.rect.left+boss.count*1.75, boss.rect.top, boss.rect.left-600+boss.count*30,
-                                   boss.rect.top-600)
-                bullets.add(newBullet)
-                all_sprites.add(newBullet)
+            elif event.type == ADDSTAR:
+                star = BackgroundStar()
+                stars.add(star)
+                all_sprites.add(star)
 
-                newBullet = Bullet(boss.rect.right, boss.rect.top+boss.count*1.75, boss.rect.right + 600,
-                                   boss.rect.top - 600 + boss.count * 30)
-                bullets.add(newBullet)
-                all_sprites.add(newBullet)
+            elif event.type == BOSSSWIPE:
+                bullet = BulletRect(random.choice((-200, SCREEN_WIDTH+200)), player.rect.centery)
+                bullets.add(bullet)
+                all_sprites.add(bullet)
 
-                newBullet = Bullet(boss.rect.right-boss.count*1.75, boss.rect.bottom, boss.rect.right + 600 - boss.count * 30,
-                                   boss.rect.bottom + 600)
-                bullets.add(newBullet)
-                all_sprites.add(newBullet)
-
-                newBullet = Bullet(boss.rect.left, boss.rect.bottom-boss.count*1.75, boss.rect.left - 600,
-                                   boss.rect.bottom + 600 - boss.count * 30)
-                bullets.add(newBullet)
-                all_sprites.add(newBullet)
-
-                boss.spinFrame += 0.5
-                if boss.spinFrame >= len(boss.spinFrames):
-                    boss.surf = boss.spinFrames[0]
+            elif event.type == ADDENEMY:
+                rand = random.randint(0, 2)
+                if rand == 0:
+                    new_enemy = EnemyGun()
+                elif rand == 1:
+                    new_enemy = EnemyStar()
                 else:
-                    boss.surf = boss.spinFrames[int(boss.spinFrame)]
+                    new_enemy = EnemyBomber()
+                enemies.add(new_enemy)
+                all_sprites.add(new_enemy)
 
-                boss.count += 1
-
-        elif event.type == DOWNBULLETS:
-            x = random.randint(0, SCREEN_WIDTH)
-            newBullet = Bullet(x, SCREEN_HEIGHT, x,
-                               0)
-            bullets.add(newBullet)
-            all_sprites.add(newBullet)
-
-        elif event.type == BOSSBULLETSTORM:
-            for boss in bossgroup.sprites():
-                newBullet = Bullet(boss.rect.right + 10, boss.rect.bottom - 20, player.rect.centerx,
-                                   player.rect.centery)
-                bullets.add(newBullet)
-                all_sprites.add(newBullet)
-                newBullet = Bullet(boss.rect.left - 10, boss.rect.bottom - 20, player.rect.centerx, player.rect.centery)
-                bullets.add(newBullet)
-                all_sprites.add(newBullet)
-
-    pressed_keys = pygame.key.get_pressed()
-
-    stars.update()
-
-    enemies.update()
-    bullets.update()
-    bossgroup.update()
-    boss2group.update()
-    explosions.update()
-    playerBullets.update()
-    player.update(pressed_keys)
-    powerUps.update()
-    gunPickups.update()
-    shieldPickups.update()
-    healthPickups.update()
-    shieldGroup.update()
-
-
-
-
-    screen.fill((0, 0, 0))
-
-    for entity in all_sprites:
-        screen.blit(entity.surf, entity.rect)
-
-    if win:
-        text = font.render("Udało się!", True, (255, 255, 255))
-        text_rect = text.get_rect()
-        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
-        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2
-        screen.blit(text, [text_x, text_y])
-        if pygame.time.get_ticks() > endTime + 11000:
-            running = False
-    if lose:
-        text = font.render("Nie żyjesz!", True, (255, 255, 255))
-        text_rect = text.get_rect()
-        text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
-        text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2
-        screen.blit(text, [text_x, text_y])
-        if pygame.time.get_ticks() > endTime + 11000:
-            running = False
-
-    if pygame.sprite.groupcollide(players, bullets, False, True):
-
-        healthOrbs[player.health - 1].kill()
-        if pygame.time.get_ticks() > IframeTime + 500:
-            player.health -= 1
-            #print("STAN HP:", player.health)
-            hitSound.play()
-            IframeTime = pygame.time.get_ticks()
-            if player.health <= 0:
-                explosion = BigExplosion((player.rect.centerx, player.rect.centery))
-                explosions.add(explosion)
-                all_sprites.add(explosion)
-                player.kill()
-                endTime = pygame.time.get_ticks()
-                pygame.mixer.music.load("lose.mp3")
-                pygame.mixer.music.play(loops=1)
-                pygame.mixer.music.set_volume(0.3)
-                lose = True
-
-    pygame.sprite.groupcollide(enemies, shieldGroup, True, False)
-    pygame.sprite.groupcollide(bullets, shieldGroup, True, False)
-    if pygame.sprite.groupcollide(players, powerUps, False, True):
-        if shieldGauge < 15:
-            shieldGauge += 3
-            #pickupSound.play()
-            if shieldGauge > 15:
-                shieldGauge = 15
-            powerGauge[shieldGauge - 3].kill()
-            powerGauge[shieldGauge - 3] = ShieldNotif(SCREEN_WIDTH / 2 - 60 + (shieldGauge - 3) * 6, 10)
-            all_sprites.add(powerGauge[shieldGauge - 3])
-            powerGauge[shieldGauge - 2].kill()
-            powerGauge[shieldGauge - 2] = ShieldNotif(SCREEN_WIDTH / 2 - 60 + (shieldGauge - 2) * 6, 10)
-            all_sprites.add(powerGauge[shieldGauge - 2])
-            powerGauge[shieldGauge - 1].kill()
-            powerGauge[shieldGauge-1] = ShieldNotif(SCREEN_WIDTH / 2 - 60 + (shieldGauge-1) * 6, 10)
-            all_sprites.add(powerGauge[shieldGauge-1])
-            if shieldGauge == 15:
-                shieldReadySound.play()
-
-    if pygame.sprite.groupcollide(players, shieldPickups, False, True):
-        pickupSound.play()
-        selectedPower = "shield"
-        powerIndicator.kill()
-        powerIndicator = PowerShieldPickup(SCREEN_WIDTH / 2 - 60 + 100, 10)
-        all_sprites.add(powerIndicator)
-
-    if pygame.sprite.groupcollide(players, healthPickups, False, True):
-        pickupSound.play()
-        selectedPower = "heal"
-        powerIndicator.kill()
-        powerIndicator = PowerHealPickup(SCREEN_WIDTH / 2 - 60 + 100, 10)
-        all_sprites.add(powerIndicator)
-
-    if pygame.sprite.groupcollide(players, gunPickups, False, True):
-        pickupSound.play()
-        selectedPower = "gun"
-        powerIndicator.kill()
-        powerIndicator = PowerGunPickup(SCREEN_WIDTH / 2 - 60 + 100, 10)
-        all_sprites.add(powerIndicator)
-
-
-    enemiesShot = pygame.sprite.groupcollide(enemies, playerBullets, True, True)
-    if enemiesShot:
-        for enemyShot in enemiesShot:
-            oneUp = PowerUp(enemyShot.rect.centerx, enemyShot.rect.centery)
-            powerUps.add(oneUp)
-            all_sprites.add(oneUp)
-            if pityTimer == 0:
-                pickupChance = 4
-            else:
-                pickupChance = random.randint(0, pityTimer)
-            if pickupChance == 4:
-                powerChoice = random.randint(0, 2)
-                pityTimer = 3
-                if powerChoice == 0:
-                    powerpickup = PowerHealPickup(enemyShot.rect.centerx, enemyShot.rect.centery)
-                    healthPickups.add(powerpickup)
-                    all_sprites.add(powerpickup)
-                elif powerChoice == 1:
-                    powerpickup = PowerGunPickup(enemyShot.rect.centerx, enemyShot.rect.centery)
-                    gunPickups.add(powerpickup)
-                    all_sprites.add(powerpickup)
-                else:
-                    powerpickup = PowerShieldPickup(enemyShot.rect.centerx, enemyShot.rect.centery)
-                    shieldPickups.add(powerpickup)
-                    all_sprites.add(powerpickup)
-            else:
-                pityTimer-=1
-            explosion = Explosion((enemyShot.rect.centerx, enemyShot.rect.centery))
-            explosions.add(explosion)
-            all_sprites.add(explosion)
-        kill += 1
-
-
-        if kill == 8:
-            for i in range(0, bossHP):
-                bossHealthOrbs.append(BossHealthOrb(SCREEN_WIDTH - i * 3, 10))
-                all_sprites.add(bossHealthOrbs[i])
-            boss = EnemyBoss()
-            bossgroup.add(boss)
-            all_sprites.add(boss)
-            pygame.time.set_timer(ADDENEMY, 5000)
-            pygame.time.set_timer(BOSSATTACK, 3000)
-        if kill == 17:
-            for i in range(0, boss2HP):
-                bossHealthOrbs.append(BossHealthOrb(SCREEN_WIDTH - i * 3, 10))
-                all_sprites.add(bossHealthOrbs[i])
-            boss = EnemyBoss2()
-            boss2group.add(boss)
-            all_sprites.add(boss)
-            pygame.time.set_timer(ADDENEMY, 5000)
-            pygame.time.set_timer(BOSSATTACK, 4000)
-
-    if pygame.sprite.groupcollide(bossgroup, playerBullets, False, True):
-        for boss in bossgroup.sprites():
-            bossHealthOrbs[boss.health - 1].kill()
-            boss.health -= 1
-
-
-            if boss.health <= 0:
-                explosion = BigExplosion((boss.rect.centerx, boss.rect.centery))
-                explosions.add(explosion)
-                all_sprites.add(explosion)
-                boss.kill()
-                bossDeathSound.play()
-                pygame.time.set_timer(ADDENEMY, 1500)
-                pygame.time.set_timer(BOSSATTACK, 0)
-                kill = 9
-
-
-    if pygame.sprite.groupcollide(boss2group, playerBullets, False, True):
-        for boss2 in boss2group.sprites():
-
-            bossHealthOrbs[boss2.health - 1].kill()
-            boss2.health -= 1
-
-            if boss2.health <= 0:
-                boss2.kill()
-
-                pygame.mixer.music.load("win.mp3")
-                pygame.mixer.music.play(loops=1)
-                pygame.mixer.music.set_volume(0.1)
-
+            elif event.type == ADDBULLET:
                 for enemy in enemies.sprites():
-                    enemy.kill()
-                for bullet in bullets.sprites():
-                    bullet.kill()
-                explosion = BigExplosion((boss2.rect.centerx, boss2.rect.centery))
-                explosions.add(explosion)
-                all_sprites.add(explosion)
+                    enemy.attack()
+
+            elif event.type == POWERGAUGE:
+                if shieldGauge < 15:
+                    #print(shieldGauge)
+                    if shieldGauge > 15:
+                        shieldGauge = 15
+                    powerGauge[shieldGauge] = ShieldNotif(SCREEN_WIDTH / 2 - 60 + shieldGauge * 6, 10)
+                    all_sprites.add(powerGauge[shieldGauge])
+                    shieldGauge += 1
+
+
+
+                    if shieldGauge == 15:
+                        shieldReadySound.play()
+
+            elif event.type == BOSSATTACK:
+
+                for boss in bossgroup.sprites():
+                    kill = 9
+                    boss.attack()
+                for boss2 in boss2group.sprites():
+                    boss2.attack()
+
+            elif event.type == LAZORBULLETS:
+                for boss in boss2group.sprites():
+                    newBullet = Bullet(boss.rect.left+boss.count*1.75, boss.rect.top, boss.rect.left-600+boss.count*30,
+                                       boss.rect.top-600)
+                    bullets.add(newBullet)
+                    all_sprites.add(newBullet)
+
+                    newBullet = Bullet(boss.rect.right, boss.rect.top+boss.count*1.75, boss.rect.right + 600,
+                                       boss.rect.top - 600 + boss.count * 30)
+                    bullets.add(newBullet)
+                    all_sprites.add(newBullet)
+
+                    newBullet = Bullet(boss.rect.right-boss.count*1.75, boss.rect.bottom, boss.rect.right + 600 - boss.count * 30,
+                                       boss.rect.bottom + 600)
+                    bullets.add(newBullet)
+                    all_sprites.add(newBullet)
+
+                    newBullet = Bullet(boss.rect.left, boss.rect.bottom-boss.count*1.75, boss.rect.left - 600,
+                                       boss.rect.bottom + 600 - boss.count * 30)
+                    bullets.add(newBullet)
+                    all_sprites.add(newBullet)
+
+                    boss.spinFrame += 0.5
+                    if boss.spinFrame >= len(boss.spinFrames):
+                        boss.surf = boss.spinFrames[0]
+                    else:
+                        boss.surf = boss.spinFrames[int(boss.spinFrame)]
+
+                    boss.count += 1
+
+            elif event.type == DOWNBULLETS:
+                x = random.randint(0, SCREEN_WIDTH)
+                newBullet = Bullet(x, SCREEN_HEIGHT, x,
+                                   0)
+                bullets.add(newBullet)
+                all_sprites.add(newBullet)
+
+            elif event.type == BOSSBULLETSTORM:
+                for boss in bossgroup.sprites():
+                    newBullet = Bullet(boss.rect.right + 10, boss.rect.bottom - 20, player.rect.centerx,
+                                       player.rect.centery)
+                    bullets.add(newBullet)
+                    all_sprites.add(newBullet)
+                    newBullet = Bullet(boss.rect.left - 10, boss.rect.bottom - 20, player.rect.centerx, player.rect.centery)
+                    bullets.add(newBullet)
+                    all_sprites.add(newBullet)
+
+        pressed_keys = pygame.key.get_pressed()
+
+        stars.update()
+
+        enemies.update()
+        bullets.update()
+        bossgroup.update()
+        boss2group.update()
+        explosions.update()
+        playerBullets.update()
+        player.update(pressed_keys)
+        powerUps.update()
+        gunPickups.update()
+        shieldPickups.update()
+        healthPickups.update()
+        shieldGroup.update()
+
+
+
+
+        screen.fill((0, 0, 0))
+
+        for entity in all_sprites:
+            screen.blit(entity.surf, entity.rect)
+
+        if win:
+            text = font.render("Udało się!", True, (255, 255, 255))
+            text_rect = text.get_rect()
+            text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+            text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2
+            screen.blit(text, [text_x, text_y])
+            if pygame.time.get_ticks() > endTime + 11000:
                 pygame.time.set_timer(ADDENEMY, 0)
                 pygame.time.set_timer(ADDBULLET, 0)
                 pygame.time.set_timer(BOSSATTACK, 0)
                 pygame.time.set_timer(LAZORBULLETS, 0)
                 pygame.time.set_timer(DOWNBULLETS, 0)
                 pygame.time.set_timer(BOSSSWIPE, 0)
+                game = False
+        if lose:
+            text = font.render("Nie żyjesz!", True, (255, 255, 255))
+            text_rect = text.get_rect()
+            text_x = SCREEN_WIDTH / 2 - text_rect.width / 2
+            text_y = SCREEN_HEIGHT / 2 - text_rect.height / 2
+            screen.blit(text, [text_x, text_y])
+            if pygame.time.get_ticks() > endTime + 11000:
+                pygame.time.set_timer(ADDENEMY, 0)
+                pygame.time.set_timer(ADDBULLET, 0)
+                pygame.time.set_timer(BOSSATTACK, 0)
+                pygame.time.set_timer(LAZORBULLETS, 0)
+                pygame.time.set_timer(DOWNBULLETS, 0)
+                pygame.time.set_timer(BOSSSWIPE, 0)
+                game = False
 
-                win = True
-                endTime = pygame.time.get_ticks()
+        if pygame.sprite.groupcollide(players, bullets, False, True):
+            if pygame.time.get_ticks() > IframeTime + 500:
+                healthOrbs[player.health - 1].kill()
+                player.health -= 1
+                #print("STAN HP:", player.health)
+                hitSound.play()
+                IframeTime = pygame.time.get_ticks()
+                if player.health <= 0:
+                    explosion = BigExplosion((player.rect.centerx, player.rect.centery))
+                    explosions.add(explosion)
+                    all_sprites.add(explosion)
+                    player.kill()
+                    endTime = pygame.time.get_ticks()
+                    pygame.mixer.music.load("lose.mp3")
+                    pygame.mixer.music.play(loops=1)
+                    pygame.mixer.music.set_volume(0.3)
+                    lose = True
 
-    if pygame.time.get_ticks() > shieldDeathTime + 1000:
-        for shield in shieldGroup.sprites():
-            shield.kill()
+        pygame.sprite.groupcollide(enemies, shieldGroup, True, False)
+        pygame.sprite.groupcollide(bullets, shieldGroup, True, False)
+        if pygame.sprite.groupcollide(players, powerUps, False, True):
+            if shieldGauge < 15:
+                shieldGauge += 3
+                #pickupSound.play()
+                if shieldGauge > 15:
+                    shieldGauge = 15
+                powerGauge[shieldGauge - 3].kill()
+                powerGauge[shieldGauge - 3] = ShieldNotif(SCREEN_WIDTH / 2 - 60 + (shieldGauge - 3) * 6, 10)
+                all_sprites.add(powerGauge[shieldGauge - 3])
+                powerGauge[shieldGauge - 2].kill()
+                powerGauge[shieldGauge - 2] = ShieldNotif(SCREEN_WIDTH / 2 - 60 + (shieldGauge - 2) * 6, 10)
+                all_sprites.add(powerGauge[shieldGauge - 2])
+                powerGauge[shieldGauge - 1].kill()
+                powerGauge[shieldGauge-1] = ShieldNotif(SCREEN_WIDTH / 2 - 60 + (shieldGauge-1) * 6, 10)
+                all_sprites.add(powerGauge[shieldGauge-1])
+                if shieldGauge == 15:
+                    shieldReadySound.play()
+
+        if pygame.sprite.groupcollide(players, shieldPickups, False, True):
+            pickupSound.play()
+            selectedPower = "shield"
+            powerIndicator.kill()
+            powerIndicator = PowerShieldPickup(SCREEN_WIDTH / 2 - 60 + 100, 10)
+            all_sprites.add(powerIndicator)
+
+        if pygame.sprite.groupcollide(players, healthPickups, False, True):
+            pickupSound.play()
+            selectedPower = "heal"
+            powerIndicator.kill()
+            powerIndicator = PowerHealPickup(SCREEN_WIDTH / 2 - 60 + 100, 10)
+            all_sprites.add(powerIndicator)
+
+        if pygame.sprite.groupcollide(players, gunPickups, False, True):
+            pickupSound.play()
+            selectedPower = "gun"
+            powerIndicator.kill()
+            powerIndicator = PowerGunPickup(SCREEN_WIDTH / 2 - 60 + 100, 10)
+            all_sprites.add(powerIndicator)
 
 
-    # screen.blit(player.surf, player.rect)
+        enemiesShot = pygame.sprite.groupcollide(enemies, playerBullets, True, True)
+        if enemiesShot:
+            for enemyShot in enemiesShot:
+                oneUp = PowerUp(enemyShot.rect.centerx, enemyShot.rect.centery)
+                powerUps.add(oneUp)
+                all_sprites.add(oneUp)
+                if pityTimer == 0:
+                    pickupChance = 4
+                else:
+                    pickupChance = random.randint(0, pityTimer)
+                if pickupChance == 4:
+                    powerChoice = random.randint(0, 2)
+                    pityTimer = 3
+                    if powerChoice == 0:
+                        powerpickup = PowerHealPickup(enemyShot.rect.centerx, enemyShot.rect.centery)
+                        healthPickups.add(powerpickup)
+                        all_sprites.add(powerpickup)
+                    elif powerChoice == 1:
+                        powerpickup = PowerGunPickup(enemyShot.rect.centerx, enemyShot.rect.centery)
+                        gunPickups.add(powerpickup)
+                        all_sprites.add(powerpickup)
+                    else:
+                        powerpickup = PowerShieldPickup(enemyShot.rect.centerx, enemyShot.rect.centery)
+                        shieldPickups.add(powerpickup)
+                        all_sprites.add(powerpickup)
+                else:
+                    pityTimer-=1
+                explosion = Explosion((enemyShot.rect.centerx, enemyShot.rect.centery))
+                explosions.add(explosion)
+                all_sprites.add(explosion)
+            kill += 1
+
+
+            if kill == 8:
+                for i in range(0, bossHP):
+                    bossHealthOrbs.append(BossHealthOrb(SCREEN_WIDTH - i * 3, 10))
+                    all_sprites.add(bossHealthOrbs[i])
+                boss = EnemyBoss()
+                bossgroup.add(boss)
+                all_sprites.add(boss)
+                pygame.time.set_timer(ADDENEMY, 5000)
+                pygame.time.set_timer(BOSSATTACK, 3000)
+            if kill == 17:
+                for i in range(0, boss2HP):
+                    bossHealthOrbs.append(BossHealthOrb(SCREEN_WIDTH - i * 3, 10))
+                    all_sprites.add(bossHealthOrbs[i])
+                boss = EnemyBoss2()
+                boss2group.add(boss)
+                all_sprites.add(boss)
+                pygame.time.set_timer(ADDENEMY, 5000)
+                pygame.time.set_timer(BOSSATTACK, 4000)
+
+        if pygame.sprite.groupcollide(bossgroup, playerBullets, False, True):
+            for boss in bossgroup.sprites():
+                bossHealthOrbs[boss.health - 1].kill()
+                boss.health -= 1
+
+
+                if boss.health <= 0:
+                    explosion = BigExplosion((boss.rect.centerx, boss.rect.centery))
+                    explosions.add(explosion)
+                    all_sprites.add(explosion)
+                    boss.kill()
+                    bossDeathSound.play()
+                    pygame.time.set_timer(ADDENEMY, 2000)
+                    pygame.time.set_timer(BOSSATTACK, 0)
+                    kill = 9
+
+
+        if pygame.sprite.groupcollide(boss2group, playerBullets, False, True):
+            for boss2 in boss2group.sprites():
+
+                bossHealthOrbs[boss2.health - 1].kill()
+                boss2.health -= 1
+
+                if boss2.health <= 0:
+                    boss2.kill()
+
+                    pygame.mixer.music.load("win.mp3")
+                    pygame.mixer.music.play(loops=1)
+                    pygame.mixer.music.set_volume(0.1)
+
+                    for enemy in enemies.sprites():
+                        enemy.kill()
+                    for bullet in bullets.sprites():
+                        bullet.kill()
+                    explosion = BigExplosion((boss2.rect.centerx, boss2.rect.centery))
+                    explosions.add(explosion)
+                    all_sprites.add(explosion)
+                    pygame.time.set_timer(ADDENEMY, 0)
+                    pygame.time.set_timer(ADDBULLET, 0)
+                    pygame.time.set_timer(BOSSATTACK, 0)
+                    pygame.time.set_timer(LAZORBULLETS, 0)
+                    pygame.time.set_timer(DOWNBULLETS, 0)
+                    pygame.time.set_timer(BOSSSWIPE, 0)
+
+                    win = True
+                    endTime = pygame.time.get_ticks()
+
+        if pygame.time.get_ticks() > shieldDeathTime + 1000:
+            for shield in shieldGroup.sprites():
+                shield.kill()
+
+
+        # screen.blit(player.surf, player.rect)
 
     pygame.display.flip()
     clock.tick(60)
